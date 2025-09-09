@@ -1,72 +1,336 @@
 -- 1. Display details of jobs where the minimum salary is greater than 10000.
-SELECT  * FROM jobs WHERE MIN_SALARY > 10000;
-
+SELECT
+	*
+FROM
+	jobs
+WHERE
+	MIN_SALARY > 10000;
 -- 2. Display the first name and join date of the employees who joined between 2002 and
 -- 2005.
-SELECT e.FIRST_NAME, e.HIRE_DATE FROM EMPLOYEES e WHERE to_char(e.HIRE_DATE, 'YYYY') BETWEEN '2002' AND '2005';
-
+SELECT
+	e.FIRST_NAME,
+	e.HIRE_DATE
+FROM
+	EMPLOYEES e
+WHERE
+	to_char(e.HIRE_DATE, 'YYYY') BETWEEN '2002' AND '2005';
 -- 3. Display first name and join date of the employees who is either IT Programmer or
 -- Sales Man.
-SELECT e.FIRST_NAME, e.HIRE_DATE  FROM EMPLOYEES e JOIN  JOBS j 
-ON e.JOB_ID = j.JOB_ID 
-WHERE  j.JOB_TITLE = 'Programmer' OR  j.JOB_TITLE = 'Sales Manager';
-
+SELECT
+	e.FIRST_NAME,
+	e.HIRE_DATE
+FROM
+	EMPLOYEES e
+JOIN JOBS j 
+ON
+	e.JOB_ID = j.JOB_ID
+WHERE
+	j.JOB_TITLE = 'Programmer'
+	OR j.JOB_TITLE = 'Sales Manager';
 -- 4. Display employees who joined after 1st January 2008.
-SELECT * FROM EMPLOYEES e WHERE e.HIRE_DATE  > DATE '2008-01-01'
-
--- 5. Display details of employee with ID 150 or 160.
-SELECT * FROM EMPLOYEES e  WHERE e.EMPLOYEE_ID BETWEEN 150 AND 160;
-
+SELECT
+	*
+FROM
+	EMPLOYEES e
+WHERE
+	e.HIRE_DATE > DATE '2008-01-01'
+	-- 5. Display details of employee with ID 150 or 160.
+SELECT
+	*
+FROM
+	EMPLOYEES e
+WHERE
+	e.EMPLOYEE_ID BETWEEN 150 AND 160;
 -- 6. Display first name, salary, commission pct, and hire date for employees with salary
 -- less than 10000.
-SELECT e.FIRST_NAME, e.HIRE_DATE, e.COMMISSION_PCT, e.SALARY FROM EMPLOYEES e  WHERE e.SALARY < 10000;
-
+SELECT
+	e.FIRST_NAME,
+	e.HIRE_DATE,
+	e.COMMISSION_PCT,
+	e.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	e.SALARY < 10000;
 -- 7. Display job Title, the difference between minimum and maximum salaries for jobs
 -- with max salary in the range 10000 to 20000.
-SELECT JOB_TITLE, (MAX_SALARY - MIN_SALARY) AS	difference FROM JOBS WHERE MAX_SALARY BETWEEN 10000 AND 20000;
-
+SELECT
+	JOB_TITLE,
+	(MAX_SALARY - MIN_SALARY) AS difference
+FROM
+	JOBS
+WHERE
+	MAX_SALARY BETWEEN 10000 AND 20000;
 -- 8. Display first name, salary, and round the salary to thousands.
-SELECT e.FIRST_NAME, ROUND(e.SALARY, -3)  FROM EMPLOYEES e;
-
+SELECT
+	e.FIRST_NAME,
+	ROUND(e.SALARY, -3)
+FROM
+	EMPLOYEES e;
 -- 9. Display details of jobs in the descending order of the title.
-SELECT * FROM JOBS j ORDER BY j.JOB_TITLE DESC;
-
+SELECT
+	*
+FROM
+	JOBS j
+ORDER BY
+	j.JOB_TITLE DESC;
 -- 10. Display employees where the first name or last name starts with S.
-SELECT * FROM EMPLOYEES e WHERE e.FIRST_NAME  LIKE 'S%' OR e.LAST_NAME LIKE 'S%';
+SELECT
+	*
+FROM
+	EMPLOYEES e
+WHERE
+	e.FIRST_NAME LIKE 'S%'
+	OR e.LAST_NAME LIKE 'S%';
 
-SELECT * FROM EMPLOYEES e WHERE REGEXP_LIKE(e.FIRST_NAME, '^S', 'i') OR REGEXP_LIKE(e.LAST_NAME , '^S', 'i');
-
+SELECT
+	*
+FROM
+	EMPLOYEES e
+WHERE
+	REGEXP_LIKE(e.FIRST_NAME, '^S', 'i')
+	OR REGEXP_LIKE(e.LAST_NAME , '^S', 'i');
 -- 11. Display employees who joined in the month of May.
-SELECT * FROM  EMPLOYEES e WHERE EXTRACT (MONTH FROM e.HIRE_DATE ) = 5;
-
+SELECT
+	*
+FROM
+	EMPLOYEES e
+WHERE
+	EXTRACT (MONTH
+FROM
+	e.HIRE_DATE ) = 5;
 -- 12. Display details of the employees where commission percentage is null and salary in
 -- the range 5000 to 10000 and department is 30.
-SELECT * FROM EMPLOYEES e WHERE e.COMMISSION_PCT IS NULL AND e.SALARY BETWEEN 5000 AND 10000 AND e.DEPARTMENT_ID = 30;
-
+SELECT
+	*
+FROM
+	EMPLOYEES e
+WHERE
+	e.COMMISSION_PCT IS NULL
+	AND e.SALARY BETWEEN 5000 AND 10000
+	AND e.DEPARTMENT_ID = 30;
 -- 13. Display first name and date of first salary of the employees.
+-- First salary is paid on 5th of the month if the employee joined on or before 5th
+WITH x AS (
+SELECT
+	e.*,
+	TRUNC(e.hire_date, 'MM') + 4 AS month_5th
+FROM
+	EMPLOYEES e 
+)
+SELECT
+	FIRST_NAME ,
+	HIRE_DATE ,
+	CASE 
+		WHEN HIRE_DATE <= month_5th THEN month_5th
+		ELSE ADD_MONTHS(MONTH_5TH , 1)
+	END AS first_salary_date
+FROM
+	x
+ORDER BY
+	HIRE_DATE;
 -- 14. Display first name and experience of the employees.
+SELECT
+	e.FIRST_NAME,
+	TRUNC(MONTHS_BETWEEN(SYSDATE, e.HIRE_DATE) / 12) AS years_of_experience
+FROM
+	EMPLOYEES e
+ORDER BY
+	YEARS_OF_EXPERIENCE DESC;
 -- 15. Display first name of employees who joined in 2001.
+SELECT
+	e.FIRST_NAME ,
+	e.HIRE_DATE
+FROM
+	EMPLOYEES e
+WHERE
+	EXTRACT (YEAR
+FROM
+	e.HIRE_DATE ) = 2001;
 -- 16. Display first name and last name after converting the first letter of each name to
 -- upper case and the rest to lower case.
--- 17. Display the first word in job title.
+SELECT
+	INITCAP(e.FIRST_NAME),
+	INITCAP(e.LAST_NAME)
+FROM
+	EMPLOYEES e ;
+
+SELECT
+	UPPER(SUBSTR(e.first_name, 1, 1)) || LOWER(SUBSTR(e.first_name, 2)) AS first_name_cap,
+	UPPER(SUBSTR(e.last_name, 1, 1)) || LOWER(SUBSTR(e.last_name, 2)) AS last_name_cap
+FROM
+	EMPLOYEES e
+	-- 17. Display the first word in job title.
+SELECT
+	job_id,
+	job_title,
+	REGEXP_SUBSTR(job_title, '^\S+') AS first_word
+FROM
+	jobs;
 -- 18. Display the length of first name for employees where last name contain character ‘b’
 -- after 3rd position.
+SELECT
+	e.first_name,
+	e.last_name,
+	LENGTH(e.first_name) AS first_name_length
+FROM
+	employees e
+WHERE
+	INSTR(LOWER(e.last_name), 'b') > 3;
 -- 19. Display first name in upper case and email address in lower case for employees
 -- where the first name and email address are same irrespective of the case.
+SELECT
+	UPPER(e.first_name) AS first_name_upper,
+	LOWER(e.email) AS email_lower
+FROM
+	employees e
+WHERE
+	UPPER(e.first_name) = UPPER(e.email);
 -- 20. Display employees who joined in the current year.
+SELECT
+	e.FIRST_NAME,
+	e.HIRE_DATE
+FROM
+	EMPLOYEES e
+WHERE
+	EXTRACT (YEAR
+FROM
+	e.HIRE_DATE ) = EXTRACT (YEAR
+FROM
+	SYSDATE);
 -- 21. Display the number of days between system date and 1st January 2011.
+SELECT
+	SYSDATE,
+	DATE '2011-01-01' AS start_date,
+	TRUNC(SYSDATE - DATE '2011-01-01') AS days_between
+FROM
+	dual;
 -- 22. Display how many employees joined in each month of the current year.
+SELECT
+	EXTRACT(MONTH FROM e.HIRE_DATE) AS no_month,
+	COUNT(*) AS total
+FROM
+	EMPLOYEES e
+WHERE
+	e.HIRE_DATE >= TRUNC(SYSDATE, 'YYYY')
+	AND
+	e.HIRE_DATE < ADD_MONTHS(TRUNC(SYSDATE, 'YYYY'), 12)
+GROUP BY
+	EXTRACT(MONTH FROM e.HIRE_DATE)
+ORDER BY
+	EXTRACT(MONTH FROM e.HIRE_DATE);
 -- 23. Display manager ID and number of employees managed by the manager.
+SELECT
+	e2.employee_id AS manager_id,
+	COUNT(e1.employee_id) AS team_size
+FROM
+	employees e1
+JOIN employees e2
+  ON
+	e1.manager_id = e2.employee_id
+GROUP BY
+	e2.employee_id
+ORDER BY
+	e2.employee_id;
 -- 24. Display number of employees joined after 15th of the month.
+SELECT
+	TO_CHAR(hire_date, 'YYYY-MM') AS month_year,
+	COUNT(*) AS hires_after_15th
+FROM
+	employees
+WHERE
+	EXTRACT(DAY FROM hire_date) > 15
+GROUP BY
+	TO_CHAR(hire_date, 'YYYY-MM')
+ORDER BY
+	month_year;
 -- 25. Display the country ID and number of cities we have in the country.
+SELECT
+	c.COUNTRY_ID ,
+	COUNT(*) AS total_cities
+FROM
+	COUNTRIES c
+JOIN LOCATIONS l ON
+	c.COUNTRY_ID = l.COUNTRY_ID
+GROUP BY
+	c.COUNTRY_ID
+ORDER BY
+	c.COUNTRY_ID ASC;
 -- 26. Display average salary of employees in each department who have commission
 -- percentage.
+SELECT
+	e.DEPARTMENT_ID ,
+	AVG(e.SALARY) AS avg_salary
+FROM
+	EMPLOYEES e
+WHERE
+	e.COMMISSION_PCT IS NOT NULL
+GROUP BY
+	e.DEPARTMENT_ID
+ORDER BY
+	DEPARTMENT_ID;
 -- 27. Display job ID, number of employees, sum of salary, and difference between highest
 -- salary and lowest salary of the employees of the job.
+WITH cte_jobs AS (
+SELECT
+	j.JOB_ID,
+	j.MAX_SALARY - j.MIN_SALARY AS difference
+FROM
+	JOBS j  
+)
+SELECT
+	j.JOB_ID,
+	j.DIFFERENCE,
+	COUNT(e.EMPLOYEE_ID) AS total_mem, 
+	NVL(SUM(e.SALARY), 0) AS total_salary,
+	CASE 
+		WHEN COUNT(e.EMPLOYEE_ID) > 0 THEN MAX(e.SALARY) - MIN(e.SALARY)
+		ELSE 0
+	END AS range_diff_salary
+FROM
+	cte_jobs j
+LEFT JOIN EMPLOYEES e ON
+	j.JOB_ID = e.JOB_ID
+GROUP BY
+	j.JOB_ID,
+	j.DIFFERENCE;
 -- 28. Display job ID for jobs with average salary more than 10000.
+SELECT
+	j.JOB_ID,
+	j.JOB_TITLE
+FROM
+	JOBS j
+WHERE
+	(j.MAX_SALARY + j.MIN_SALARY) / 2 > 10000;
 -- 29. Display years in which more than 10 employees joined.
+SELECT
+	EXTRACT(YEAR FROM hire_date) AS year_joined,
+	COUNT(*) AS total_hires
+FROM
+	employees
+GROUP BY
+	EXTRACT(YEAR FROM hire_date)
+HAVING
+	COUNT(*) > 10
+ORDER BY
+	year_joined;
 -- 30. Display departments in which more than five employees have commission
 -- percentage.
+SELECT
+	d.DEPARTMENT_ID,
+	d.DEPARTMENT_NAME,
+	 COUNT(*) AS num_employees_with_commission
+FROM
+	EMPLOYEES e
+JOIN DEPARTMENTS d ON
+	e.DEPARTMENT_ID = d.DEPARTMENT_ID
+WHERE
+	e.COMMISSION_PCT IS NOT NULL
+GROUP BY
+	d.DEPARTMENT_ID ,
+	d.DEPARTMENT_NAME
+HAVING
+	COUNT(*) > 5 ;
 -- 31. Display employee ID for employees who did more than one job in the past.
 -- 32. Display job ID of jobs that were done by more than 3 employees for more than 100
 -- days.
